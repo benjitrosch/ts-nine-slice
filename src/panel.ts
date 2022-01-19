@@ -1,4 +1,4 @@
-const SELECTOR_SIZE = 32
+const SELECTOR_SIZE = 64
 const HALF_SELECTOR_SIZE = SELECTOR_SIZE / 2
 
 enum ResizeState {
@@ -32,64 +32,64 @@ class Panel {
 
     private get topResizer() {
         return new AABB(
-			this.x + this.w / 2 - HALF_SELECTOR_SIZE,
-			this.y - HALF_SELECTOR_SIZE,
-			SELECTOR_SIZE,
-			SELECTOR_SIZE
+			this.x + HALF_SELECTOR_SIZE,
+			this.y,
+			this.w - SELECTOR_SIZE,
+			HALF_SELECTOR_SIZE
         )
     }
 
     private get bottomResizer() {
         return new AABB(
-			this.x + this.w / 2 - HALF_SELECTOR_SIZE,
+			this.x + HALF_SELECTOR_SIZE,
 			this.y + this.h - HALF_SELECTOR_SIZE,
-			SELECTOR_SIZE,
-			SELECTOR_SIZE
+			this.w - SELECTOR_SIZE,
+			HALF_SELECTOR_SIZE
         )
     }
 
     private get leftResizer() {
         return new AABB(
-			this.x - HALF_SELECTOR_SIZE,
-			this.y + this.h / 2 - HALF_SELECTOR_SIZE,
-			SELECTOR_SIZE,
-			SELECTOR_SIZE
+			this.x,
+			this.y + HALF_SELECTOR_SIZE,
+			HALF_SELECTOR_SIZE,
+			this.h - SELECTOR_SIZE
         )
     }
 
     private get rightResizer() {
         return new AABB(
 			this.x + this.w - HALF_SELECTOR_SIZE,
-			this.y + this.h / 2 - HALF_SELECTOR_SIZE,
-			SELECTOR_SIZE,
-			SELECTOR_SIZE
+			this.y + HALF_SELECTOR_SIZE,
+			HALF_SELECTOR_SIZE,
+			this.h - SELECTOR_SIZE
         )
     }
 
     private get topLeftResizer() {
         return new AABB(
-            this.x - HALF_SELECTOR_SIZE,
-            this.y - HALF_SELECTOR_SIZE,
-            SELECTOR_SIZE,
-            SELECTOR_SIZE
+            this.x,
+            this.y,
+            HALF_SELECTOR_SIZE,
+            HALF_SELECTOR_SIZE
         )
     }
 
     private get topRightResizer() {
         return new AABB(
             this.x + this.w - HALF_SELECTOR_SIZE,
-            this.y - HALF_SELECTOR_SIZE,
-            SELECTOR_SIZE,
-            SELECTOR_SIZE
+            this.y,
+            HALF_SELECTOR_SIZE,
+            HALF_SELECTOR_SIZE
         )
     }
 
     private get bottomLeftResizer() {
         return new AABB(
-            this.x - HALF_SELECTOR_SIZE,
+            this.x,
             this.y + this.h - HALF_SELECTOR_SIZE,
-            SELECTOR_SIZE,
-            SELECTOR_SIZE
+            HALF_SELECTOR_SIZE,
+            HALF_SELECTOR_SIZE
         )
     }
 
@@ -97,8 +97,8 @@ class Panel {
         return new AABB(
             this.x + this.w - HALF_SELECTOR_SIZE,
             this.y + this.h - HALF_SELECTOR_SIZE,
-            SELECTOR_SIZE,
-            SELECTOR_SIZE
+            HALF_SELECTOR_SIZE,
+            HALF_SELECTOR_SIZE
         )
     }
 

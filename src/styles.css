@@ -36,22 +36,23 @@ span {
     margin: 0 1rem;
 }
 
+#title {
+    font-weight: bold;
+}
+
 button {
     margin: 0 0.1rem;
     padding: 0.3125rem 0.625rem;
 
-    background-color: #f6c6f9;
-    color: #0250d8;
+    background-color: white;
+    color: black;
 
     outline: none;
-    border: 2.5px solid #0250d8;
-
-    box-shadow: inset 0 2.5px #fffaff, inset 0 -2.5px #f498f1;
+    border: 2.5px solid black;
 
     font-weight: bold;
 }
 
-button:hover {
-    background-color: #f498f1;
-    box-shadow: none;
+button:active {
+    background-color: #c4aeff;
 }
