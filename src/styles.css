@@ -15,7 +15,7 @@ html, body {
 
 canvas {
     display: block;
-    background-color: #dfe3ff;
+    background-color: #56ecb9;
 }
 
 #navbar {
@@ -25,11 +25,10 @@ canvas {
 
     padding: 0.3125rem;
 
-    background-color: #d5e5e8;
-    color: #9eaeaf;
+    background-color: white;
+    color: black;
 
-    border-top: 5px solid #fffaff;
-    border-bottom: 5px solid #0250d8;
+    border-bottom: 5px solid black;
 }
 
 span {

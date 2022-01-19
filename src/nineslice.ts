@@ -37,16 +37,16 @@ class NineSlice {
 		this.height = image.height
 	}
 
-	clamp(num: number, min: number, max: number) {
+	private clamp(num: number, min: number, max: number) {
 		return Math.min(Math.max(num, min), max)
 	}
 
-	resize(width: number, height: number) {
+	public resize(width: number, height: number) {
 		this.width = Math.max(width, this.centerWidth)
 		this.height = Math.max(height, this.centerHeight)
 	}
 
-	draw(context: CanvasRenderingContext2D, x: number, y: number) {
+	public draw(context: CanvasRenderingContext2D, x: number, y: number, pattern?: Pattern | null) {
 		const centerX = x + this.left
 		const centerY = y + this.top
 		const rightX = x + this.left + this.width
@@ -85,9 +85,23 @@ class NineSlice {
 
 			if (this.centerHeight > 0) {
 				// CENTER
-				context.drawImage(this.image,
-					this.left, this.top, this.centerWidth, this.centerHeight,
-					centerX, centerY, this.width, this.height)
+				if (pattern != null) {
+					context.save()
+
+					pattern.scroll(0.25, 0.25)
+					pattern.texture.setTransform(new DOMMatrix(
+						[pattern.rotation, 1, 1, 0, pattern.x, pattern.y]
+						))
+
+					context.fillStyle = pattern.texture
+					context.fillRect(centerX, centerY, this.width, this.height)
+
+					context.restore()
+				} else {
+					context.drawImage(this.image,
+						this.left, this.top, this.centerWidth, this.centerHeight,
+						centerX, centerY, this.width, this.height)
+				}
 			}
 
 			if (this.bottom > 0) {
@@ -122,7 +136,7 @@ class NineSlice {
 		}
 	}
 
-	drawDebug(context: CanvasRenderingContext2D, x: number, y: number) {
+	public drawDebug(context: CanvasRenderingContext2D, x: number, y: number) {
 		context.save()
 
 		const SELECTOR_SIZE = 16

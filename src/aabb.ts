@@ -31,7 +31,7 @@ class AABB {
         this.h = h
     }
 
-    check(x: number, y: number)
+    public check(x: number, y: number)
     {
         return this.left <= x &&
             this.right >= x &&
@@ -39,7 +39,7 @@ class AABB {
             this.bottom >= y
     }
 
-    draw(context: CanvasRenderingContext2D  , hover = false)
+    public draw(context: CanvasRenderingContext2D  , hover = false)
     {
         context.save()
 

@@ -19,12 +19,22 @@ window.onload = function() {
     const box = new AABB(width / 2, height / 2, 50, 50)
 
     let nineslice: NineSlice | null = null  
+    let pattern: Pattern | null = null
 
-    const image = new Image()
-    image.src = "16x16_window.png"
-    image.onload = () => {
-        nineslice = new NineSlice(image, 50, image.height - 20, 15, image.width - 20)
+    const panelImage = new Image()
+    panelImage.src = "16x16_window_alt.png"
+    panelImage.onload = () => {
+        nineslice = new NineSlice(panelImage, 55, panelImage.height - 25, 20, panelImage.width - 25)
         draw(context)
+    }
+
+    const backgroundImage = new Image()
+    backgroundImage.src = "background_pattern.png"
+    backgroundImage.onload = () => {
+        const texture = context.createPattern(backgroundImage, 'repeat')
+        if (texture) {
+            pattern = new Pattern(texture)
+        }
     }
 
     document.body.addEventListener("mousedown", (e) => {
@@ -89,7 +99,7 @@ window.onload = function() {
             const y = height / 8
 
             nineslice.resize(mouseX - x, mouseY - y)
-            nineslice.draw(context, x, y)
+            nineslice.draw(context, x, y, pattern)
             nineslice.drawDebug(context, x, y)
         }
 
