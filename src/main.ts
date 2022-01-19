@@ -5,7 +5,9 @@ window.onload = function() {
     const canvas: HTMLCanvasElement | null = document.getElementById("canvas") as HTMLCanvasElement
     const context: CanvasRenderingContext2D | null = canvas!.getContext("2d")
 
-    if (!canvas || !context) return
+    if (!canvas || !context) {
+        return
+    }
 
     canvas.width = width
     canvas.height = height
@@ -14,13 +16,12 @@ window.onload = function() {
     let mouseY = 0
     let mousedown = false
     let selection: AABB | null = null
-    let hover = false
 
     const box = new AABB(width / 2, height / 2, 50, 50)
 
     const nineslice = new NineSlice("16x16_window_alt.png", 55, 135, 20, 135, () => draw(context))
     const pattern = new Pattern(context, "background_pattern.png")
-    const panel = new Panel(nineslice, width / 4, height / 8, 0, width / 2, height / 2)
+    const panel = new Panel(canvas, nineslice, width / 4, height / 8, 0, width / 2, height / 2)
 
     document.body.addEventListener("mousedown", (e) => {
         const { x, y } = getMousePos(canvas, e)
@@ -37,13 +38,7 @@ window.onload = function() {
     document.body.addEventListener("mousemove", (e) => {
         const { x, y } = getMousePos(canvas, e)
 
-        if (box.check(x, y)) {
-            hover = true
-            draw(context)
-        } else {
-            hover = false
-            draw(context)
-        }
+        draw(context)
 
         if (mousedown)
         {
@@ -79,16 +74,16 @@ window.onload = function() {
     function draw(context: CanvasRenderingContext2D) {
         context.clearRect(0, 0, width, height)
 
-        if (nineslice != null) {
-            const x = width / 4
-            const y = height / 8
+        // if (nineslice != null) {
+        //     const x = width / 4
+        //     const y = height / 8
 
-            nineslice.resize(mouseX - x, mouseY - y)
-            nineslice.draw(context, x, y, pattern)
-        }
+        //     nineslice.resize(mouseX - x, mouseY - y)
+        //     nineslice.draw(context, x, y, pattern)
+        // }
 
-        // panel.draw(context)
-        // panel.drawDebug(context)
+        panel.draw(context)
+        panel.drawDebug(context)
 
         // box.draw(context, hover)
     }

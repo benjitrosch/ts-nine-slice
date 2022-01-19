@@ -39,11 +39,11 @@ class AABB {
             this.bottom >= y
     }
 
-    public draw(context: CanvasRenderingContext2D  , hover = false)
+    public draw(context: CanvasRenderingContext2D)
     {
         context.save()
 
-        context.strokeStyle = hover ? "green" : "red"
+        context.strokeStyle = "red"
 
         context.beginPath()
         context.strokeRect(this.x, this.y, this.w, this.h)
