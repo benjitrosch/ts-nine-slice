@@ -18,7 +18,7 @@ class NineSlice {
 		return this.image.width - this.right
 	}
 
-	private get centerWidthUnscaled() {
+	public get centerWidthUnscaled() {
 		return this.image.width - (this.left + (this.image.width - this.right))
 	}
 
@@ -26,7 +26,7 @@ class NineSlice {
 		return this.width - this.left - this.rightWidth
 	}
 
-	private get centerHeightUnscaled() {
+	public get centerHeightUnscaled() {
 		return this.image.height - (this.top + (this.image.height - this.bottom))
 	}
 

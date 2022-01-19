@@ -134,20 +134,28 @@ class Panel {
             if (this.topResizer.check(x, y) ||
                 this.bottomResizer.check(x, y)) {
                 this.addResizeState(ResizeState.VERTICAL)
+                canvas.style.cursor = "ns-resize"
                 return
             }
 
             if (this.leftResizer.check(x, y) ||
                 this.rightResizer.check(x, y)) {
                 this.addResizeState(ResizeState.HORIZONTAL)
+                canvas.style.cursor = "ew-resize"
                 return
             }
 
             if (this.topLeftResizer.check(x, y) ||
-                this.topRightResizer.check(x, y) ||
-                this.bottomLeftResizer.check(x, y) ||
                 this.bottomRightResizer.check(x, y)) {
                 this.addResizeState(ResizeState.DIAGONAL)
+                canvas.style.cursor = "nwse-resize"
+                return
+            }
+
+            if (this.topRightResizer.check(x, y) ||
+                this.bottomLeftResizer.check(x, y)) {
+                this.addResizeState(ResizeState.DIAGONAL)
+                canvas.style.cursor = "nesw-resize"
                 return
             }
 
@@ -185,6 +193,9 @@ class Panel {
                         }
                     }
 
+                    this.w = Math.max(this.w, this.texture.centerWidthUnscaled)
+                    this.h = Math.max(this.h, this.texture.centerHeightUnscaled)
+
                     texture.resize(this.w, this.h)
                     return
                 }
@@ -200,6 +211,8 @@ class Panel {
             mousedown = false
             this.selected = false
             this.resize = ResizeState.NONE
+
+            canvas.style.cursor = "auto"
         })
     }
 
