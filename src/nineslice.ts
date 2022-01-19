@@ -2,6 +2,8 @@ class NineSlice {
 	private image: HTMLImageElement
 	private loading: boolean
 
+	private pattern: Pattern | null = null
+
 	private width: number
 	private height: number
 
@@ -63,7 +65,11 @@ class NineSlice {
 		this.height = Math.max(height, this.centerHeightUnscaled)
 	}
 
-	public draw(context: CanvasRenderingContext2D, x: number, y: number, pattern?: Pattern | null) {
+	public setPattern(pattern: Pattern) {
+		this.pattern = pattern
+	}
+
+	public draw(context: CanvasRenderingContext2D, x: number, y: number) {
 		if (this.loading) {
 			return
 		}
@@ -106,15 +112,15 @@ class NineSlice {
 
 			if (this.centerHeightUnscaled > 0) {
 				// CENTER
-				if (pattern != null && pattern.texture) {
+				if (this.pattern != null && this.pattern.texture) {
 					context.save()
 
-					pattern.scroll(0.25, 0.25)
-					pattern.texture.setTransform(new DOMMatrix(
-						[pattern.rotation, 1, 1, 0, pattern.x, pattern.y]
+					this.pattern.scroll(0.25, 0.25)
+					this.pattern.texture.setTransform(new DOMMatrix(
+						[this.pattern.rotation, 1, 1, 0, this.pattern.x, this.pattern.y]
 						))
 
-					context.fillStyle = pattern.texture
+					context.fillStyle = this.pattern.texture
 					context.fillRect(
 						centerX,
 						centerY,
@@ -216,8 +222,8 @@ class NineSlice {
 
 	private drawLine(context: CanvasRenderingContext2D, p0: { x: number, y: number }, p1: { x: number, y: number }) {
 		context.beginPath()
-		context.moveTo(p0.x, p0.y);
-		context.lineTo(p1.x, p1.y);
+		context.moveTo(p0.x, p0.y)
+		context.lineTo(p1.x, p1.y)
 		context.stroke()
 	}
 }
