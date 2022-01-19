@@ -18,24 +18,9 @@ window.onload = function() {
 
     const box = new AABB(width / 2, height / 2, 50, 50)
 
-    let nineslice: NineSlice | null = null  
-    let pattern: Pattern | null = null
-
-    const panelImage = new Image()
-    panelImage.src = "16x16_window_alt.png"
-    panelImage.onload = () => {
-        nineslice = new NineSlice(panelImage, 55, panelImage.height - 25, 20, panelImage.width - 25)
-        draw(context)
-    }
-
-    const backgroundImage = new Image()
-    backgroundImage.src = "background_pattern.png"
-    backgroundImage.onload = () => {
-        const texture = context.createPattern(backgroundImage, 'repeat')
-        if (texture) {
-            pattern = new Pattern(texture)
-        }
-    }
+    const nineslice = new NineSlice("16x16_window_alt.png", 55, 135, 20, 135, () => draw(context))
+    const pattern = new Pattern(context, "background_pattern.png")
+    const panel = new Panel(nineslice, width / 4, height / 8, 0, width / 2, height / 2)
 
     document.body.addEventListener("mousedown", (e) => {
         const { x, y } = getMousePos(canvas, e)
@@ -100,10 +85,12 @@ window.onload = function() {
 
             nineslice.resize(mouseX - x, mouseY - y)
             nineslice.draw(context, x, y, pattern)
-            nineslice.drawDebug(context, x, y)
         }
 
-        box.draw(context, hover)
+        // panel.draw(context)
+        // panel.drawDebug(context)
+
+        // box.draw(context, hover)
     }
 
     draw(context)

@@ -1,5 +1,6 @@
 class NineSlice {
 	private image: HTMLImageElement
+	private loading: boolean
 
 	private width: number
 	private height: number
@@ -17,15 +18,31 @@ class NineSlice {
 		return this.image.width - this.right
 	}
 
-	private get centerWidth() {
+	private get centerWidthUnscaled() {
 		return this.image.width - (this.left + (this.image.width - this.right))
 	}
 
-	private get centerHeight() {
+	private get centerWidthScaled() {
+		return this.width - this.left - this.rightWidth
+	}
+
+	private get centerHeightUnscaled() {
 		return this.image.height - (this.top + (this.image.height - this.bottom))
 	}
 
-	constructor(image: HTMLImageElement, top: number, bottom: number, left: number, right: number) {
+	private get centerHeightScaled() {
+		return this.height - this.top - this.bottomHeight
+	}
+
+	constructor(filepath: string, top: number, bottom: number, left: number, right: number, onload?: () => void) {
+		this.loading = true
+
+		const image = new Image()
+		image.src = filepath
+		image.onload = () => {
+			this.loading = false
+			onload && onload()
+		}
 		this.image = image
 
 		this.top = this.clamp(top, 0, bottom)
@@ -42,15 +59,19 @@ class NineSlice {
 	}
 
 	public resize(width: number, height: number) {
-		this.width = Math.max(width, this.centerWidth)
-		this.height = Math.max(height, this.centerHeight)
+		this.width = Math.max(width, this.centerWidthUnscaled)
+		this.height = Math.max(height, this.centerHeightUnscaled)
 	}
 
 	public draw(context: CanvasRenderingContext2D, x: number, y: number, pattern?: Pattern | null) {
+		if (this.loading) {
+			return
+		}
+		
 		const centerX = x + this.left
 		const centerY = y + this.top
-		const rightX = x + this.left + this.width
-		const bottomY = y + this.top + this.height
+		const rightX = x + this.width - this.rightWidth
+		const bottomY = y + this.height - this.bottomHeight
 
 		if (this.left > 0) {
 			if (this.top > 0) {
@@ -60,11 +81,11 @@ class NineSlice {
 					x, y, this.left, this.top)
 			}
 
-			if (this.centerHeight > 0) {
+			if (this.centerHeightUnscaled > 0) {
 				// CENTER LEFT
 				context.drawImage(this.image,
-					0, this.top, this.left, this.centerHeight,
-					x, centerY, this.left, this.height)
+					0, this.top, this.left, this.centerHeightUnscaled,
+					x, centerY, this.left, this.centerHeightScaled)
 			}
 
 			if (this.bottom > 0) {
@@ -75,17 +96,17 @@ class NineSlice {
 			}
 		}
 
-		if (this.centerWidth > 0) {
+		if (this.centerWidthUnscaled > 0) {
 			if (this.top > 0) {
 				// TOP CENTER
 				context.drawImage(this.image,
-					this.left, 0, this.centerWidth, this.top,
-					centerX, y, this.width, this.top)
+					this.left, 0, this.centerWidthUnscaled, this.top,
+					centerX, y, this.centerWidthScaled, this.top)
 			}
 
-			if (this.centerHeight > 0) {
+			if (this.centerHeightUnscaled > 0) {
 				// CENTER
-				if (pattern != null) {
+				if (pattern != null && pattern.texture) {
 					context.save()
 
 					pattern.scroll(0.25, 0.25)
@@ -94,21 +115,25 @@ class NineSlice {
 						))
 
 					context.fillStyle = pattern.texture
-					context.fillRect(centerX, centerY, this.width, this.height)
+					context.fillRect(
+						centerX,
+						centerY,
+						this.centerWidthScaled,
+						this.centerHeightScaled)
 
 					context.restore()
 				} else {
 					context.drawImage(this.image,
-						this.left, this.top, this.centerWidth, this.centerHeight,
-						centerX, centerY, this.width, this.height)
+						this.left, this.top, this.centerWidthUnscaled, this.centerHeightUnscaled,
+						centerX, centerY, this.centerWidthScaled, this.centerHeightScaled)
 				}
 			}
 
 			if (this.bottom > 0) {
 				// BOTTOM CENTER
 				context.drawImage(this.image,
-					this.left, this.bottom, this.centerWidth, this.bottomHeight,
-					centerX, bottomY, this.width, this.bottomHeight)
+					this.left, this.bottom, this.centerWidthUnscaled, this.bottomHeight,
+					centerX, bottomY, this.centerWidthScaled, this.bottomHeight)
 			}
 		}
 
@@ -120,11 +145,11 @@ class NineSlice {
 					rightX, y, this.rightWidth, this.top)
 			}
 
-			if (this.centerHeight > 0) {
+			if (this.centerHeightUnscaled > 0) {
 				// CENTER RIGHT
 				context.drawImage(this.image,
-					this.right, this.top, this.rightWidth, this.centerHeight,
-					rightX, centerY, this.rightWidth, this.height)
+					this.right, this.top, this.rightWidth, this.centerHeightUnscaled,
+					rightX, centerY, this.rightWidth, this.centerHeightScaled)
 			}
 
 			if (this.bottomHeight > 0) {
@@ -134,52 +159,5 @@ class NineSlice {
 					rightX, bottomY, this.rightWidth, this.bottomHeight)
 			}
 		}
-	}
-
-	public drawDebug(context: CanvasRenderingContext2D, x: number, y: number) {
-		context.save()
-
-		const SELECTOR_SIZE = 16
-		const HALF_SELECTOR_SIZE = SELECTOR_SIZE / 2
-
-		context.strokeStyle = "red"
-
-		// TOP
-        context.beginPath()
-        context.strokeRect(
-			x + (this.left + this.rightWidth + this.width) / 2 - HALF_SELECTOR_SIZE,
-			y - HALF_SELECTOR_SIZE,
-			SELECTOR_SIZE,
-			SELECTOR_SIZE)
-        context.stroke()
-
-		// BOTTOM
-		context.beginPath()
-		context.strokeRect(
-			x + (this.left + this.rightWidth + this.width) / 2 - HALF_SELECTOR_SIZE,
-			y + this.height + this.top + this.bottomHeight - HALF_SELECTOR_SIZE,
-			SELECTOR_SIZE,
-			SELECTOR_SIZE)
-		context.stroke()
-
-		// LEFT
-		context.beginPath()
-		context.strokeRect(
-			x - HALF_SELECTOR_SIZE,
-			y + (this.top + this.bottomHeight + this.height) / 2 - HALF_SELECTOR_SIZE,
-			SELECTOR_SIZE,
-			SELECTOR_SIZE)
-		context.stroke()
-
-		// RIGHT
-		context.beginPath()
-		context.strokeRect(
-			x + this.width + this.left + this.rightWidth - HALF_SELECTOR_SIZE,
-			y + (this.top + this.bottomHeight + this.height) / 2 - HALF_SELECTOR_SIZE,
-			SELECTOR_SIZE,
-			SELECTOR_SIZE)
-		context.stroke()
-
-		context.restore()
 	}
 }
