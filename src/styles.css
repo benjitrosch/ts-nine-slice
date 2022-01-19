@@ -23,7 +23,7 @@ canvas {
     align-items: center;
     justify-content: space-between;
 
-    padding: 0.3125rem;
+    padding: 0.3125rem 0.625rem;
 
     background-color: white;
     color: black;
@@ -33,7 +33,6 @@ canvas {
 
 span {
     font-size: 1rem;
-    margin: 0 1rem;
 }
 
 #title {

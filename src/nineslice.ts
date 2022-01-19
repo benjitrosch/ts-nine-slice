@@ -160,4 +160,64 @@ class NineSlice {
 			}
 		}
 	}
+
+	public drawDebug(context: CanvasRenderingContext2D, x: number, y: number) {
+		context.save()
+
+		context.strokeStyle = "#00ff00"
+		context.setLineDash([5])
+
+		this.drawLine(context,
+			{
+				x: x + this.left,
+				y: y,
+			},
+			{
+				x: x + this.left,
+				y: y + this.height,
+			}
+		)
+
+		this.drawLine(context,
+			{
+				x: x + this.width - this.rightWidth,
+				y: y,
+			},
+			{
+				x: x + this.width - this.rightWidth,
+				y: y + this.height,
+			}
+		)
+
+		this.drawLine(context,
+			{
+				x: x,
+				y: y + this.top,
+			},
+			{
+				x: x + this.width,
+				y: y + this.top,
+			}
+		)
+
+		this.drawLine(context,
+			{
+				x: x,
+				y: y + this.height - this.bottomHeight,
+			},
+			{
+				x: x + this.width,
+				y: y + this.height - this.bottomHeight,
+			}
+		)
+
+		context.restore()
+	}
+
+	private drawLine(context: CanvasRenderingContext2D, p0: { x: number, y: number }, p1: { x: number, y: number }) {
+		context.beginPath()
+		context.moveTo(p0.x, p0.y);
+		context.lineTo(p1.x, p1.y);
+		context.stroke()
+	}
 }

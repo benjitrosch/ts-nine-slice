@@ -39,7 +39,7 @@ class AABB {
             this.bottom >= y
     }
 
-    public draw(context: CanvasRenderingContext2D)
+    public drawDebug(context: CanvasRenderingContext2D)
     {
         context.save()
 

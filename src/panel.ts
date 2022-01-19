@@ -193,9 +193,7 @@ class Panel {
                         }
                     }
 
-                    this.w = Math.max(this.w, this.texture.centerWidthUnscaled)
-                    this.h = Math.max(this.h, this.texture.centerHeightUnscaled)
-
+                    this.constrain()
                     texture.resize(this.w, this.h)
                     return
                 }
@@ -203,6 +201,7 @@ class Panel {
                 if (this.selected) {
                     this.x -= deltaX
                     this.y -= deltaY
+                    this.constrain()
                 }
             }
         })
@@ -225,6 +224,18 @@ class Panel {
         }
     }
 
+    private clamp(num: number, min: number, max: number) {
+		return Math.min(Math.max(num, min), max)
+	}
+
+    private constrain()
+    {
+        this.x = this.clamp(this.x, 0, window.innerWidth - this.w)
+        this.y = this.clamp(this.y, 0, window.innerHeight - this.h)
+        this.w = Math.max(this.w, this.texture.centerWidthUnscaled)
+        this.h = Math.max(this.h, this.texture.centerHeightUnscaled)
+    }
+
     private addResizeState(state: ResizeState) {
         this.resize |= state
     }
@@ -234,16 +245,17 @@ class Panel {
     }
 
 	public drawDebug(context: CanvasRenderingContext2D) {
-        this.bounds.draw(context)
+        this.texture.drawDebug(context, this.x, this.y)
+        this.bounds.drawDebug(context)
 
-        this.topResizer.draw(context)
-        this.bottomResizer.draw(context)
-        this.leftResizer.draw(context)
-        this.rightResizer.draw(context)
+        this.topResizer.drawDebug(context)
+        this.bottomResizer.drawDebug(context)
+        this.leftResizer.drawDebug(context)
+        this.rightResizer.drawDebug(context)
 
-        this.topLeftResizer.draw(context)
-        this.topRightResizer.draw(context)
-        this.bottomLeftResizer.draw(context)
-        this.bottomRightResizer.draw(context)
+        this.topLeftResizer.drawDebug(context)
+        this.topRightResizer.drawDebug(context)
+        this.bottomLeftResizer.drawDebug(context)
+        this.bottomRightResizer.drawDebug(context)
     }
 }
