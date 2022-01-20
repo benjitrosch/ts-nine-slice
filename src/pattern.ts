@@ -1,4 +1,4 @@
-class Pattern {
+class Pattern implements IScalabeContent {
     public texture: CanvasPattern | null
 
     public loading: boolean
@@ -37,5 +37,21 @@ class Pattern {
     public rotate(deg = 1)
     {
         this.rotation += deg
+    }
+
+    public draw(context: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
+        if (this.texture != null) {
+            context.save()
+
+            this.scroll(0.25, 0.25)
+            this.texture.setTransform(new DOMMatrix(
+                [this.rotation, 1, 1, 0, this.x, this.y]
+                ))
+
+            context.fillStyle = this.texture
+            context.fillRect(x, y, w, h)
+
+            context.restore()
+        }
     }
 }

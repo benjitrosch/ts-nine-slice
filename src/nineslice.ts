@@ -1,11 +1,7 @@
 class NineSlice {
 	private image: HTMLImageElement
+	private content: IScalabeContent | null
 	private loading: boolean
-
-	private pattern: Pattern | null = null
-
-	private width: number
-	private height: number
 
 	private top: number
 	private bottom: number
@@ -24,19 +20,11 @@ class NineSlice {
 		return this.image.width - (this.left + (this.image.width - this.right))
 	}
 
-	private get centerWidthScaled() {
-		return this.width - this.left - this.rightWidth
-	}
-
 	public get centerHeightUnscaled() {
 		return this.image.height - (this.top + (this.image.height - this.bottom))
 	}
 
-	private get centerHeightScaled() {
-		return this.height - this.top - this.bottomHeight
-	}
-
-	constructor(filepath: string, top: number, bottom: number, left: number, right: number, onload?: () => void) {
+	constructor(filepath: string, top: number, bottom: number, left: number, right: number, content: IScalabeContent | null = null, onload?: () => void) {
 		this.loading = true
 
 		const image = new Image()
@@ -47,37 +35,33 @@ class NineSlice {
 		}
 		this.image = image
 
+		this.content = content
+
 		this.top = this.clamp(top, 0, bottom)
 		this.bottom = this.clamp(bottom, this.top, this.image.height)
 		this.left = this.clamp(left, 0, right)
 		this.right = this.clamp(right, this.left, this.image.width)
-
-		this.width = image.width
-		this.height = image.height
 	}
 
 	private clamp(num: number, min: number, max: number) {
 		return Math.min(Math.max(num, min), max)
 	}
 
-	public resize(width: number, height: number) {
-		this.width = Math.max(width, this.centerWidthUnscaled)
-		this.height = Math.max(height, this.centerHeightUnscaled)
-	}
-
-	public setPattern(pattern: Pattern) {
-		this.pattern = pattern
-	}
-
-	public draw(context: CanvasRenderingContext2D, x: number, y: number) {
+	public draw(context: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
 		if (this.loading) {
 			return
 		}
+
+		const width = Math.max(w, this.centerWidthUnscaled)
+		const height = Math.max(h, this.centerHeightUnscaled)
+
+		const centerWidthScaled = width - this.left - this.rightWidth
+		const centerHeightScaled = height - this.top - this.bottomHeight
 		
 		const centerX = x + this.left
 		const centerY = y + this.top
-		const rightX = x + this.width - this.rightWidth
-		const bottomY = y + this.height - this.bottomHeight
+		const rightX = x + width - this.rightWidth
+		const bottomY = y + height - this.bottomHeight
 
 		if (this.left > 0) {
 			if (this.top > 0) {
@@ -91,7 +75,7 @@ class NineSlice {
 				// CENTER LEFT
 				context.drawImage(this.image,
 					0, this.top, this.left, this.centerHeightUnscaled,
-					x, centerY, this.left, this.centerHeightScaled)
+					x, centerY, this.left, centerHeightScaled)
 			}
 
 			if (this.bottom > 0) {
@@ -107,31 +91,22 @@ class NineSlice {
 				// TOP CENTER
 				context.drawImage(this.image,
 					this.left, 0, this.centerWidthUnscaled, this.top,
-					centerX, y, this.centerWidthScaled, this.top)
+					centerX, y, centerWidthScaled, this.top)
 			}
 
 			if (this.centerHeightUnscaled > 0) {
 				// CENTER
-				if (this.pattern != null && this.pattern.texture) {
-					context.save()
-
-					this.pattern.scroll(0.25, 0.25)
-					this.pattern.texture.setTransform(new DOMMatrix(
-						[this.pattern.rotation, 1, 1, 0, this.pattern.x, this.pattern.y]
-						))
-
-					context.fillStyle = this.pattern.texture
-					context.fillRect(
+				if (this.content != null) {
+					this.content.draw(
+						context,
 						centerX,
 						centerY,
-						this.centerWidthScaled,
-						this.centerHeightScaled)
-
-					context.restore()
+						centerWidthScaled,
+						centerHeightScaled)
 				} else {
 					context.drawImage(this.image,
 						this.left, this.top, this.centerWidthUnscaled, this.centerHeightUnscaled,
-						centerX, centerY, this.centerWidthScaled, this.centerHeightScaled)
+						centerX, centerY, centerWidthScaled, centerHeightScaled)
 				}
 			}
 
@@ -139,7 +114,7 @@ class NineSlice {
 				// BOTTOM CENTER
 				context.drawImage(this.image,
 					this.left, this.bottom, this.centerWidthUnscaled, this.bottomHeight,
-					centerX, bottomY, this.centerWidthScaled, this.bottomHeight)
+					centerX, bottomY, centerWidthScaled, this.bottomHeight)
 			}
 		}
 
@@ -155,7 +130,7 @@ class NineSlice {
 				// CENTER RIGHT
 				context.drawImage(this.image,
 					this.right, this.top, this.rightWidth, this.centerHeightUnscaled,
-					rightX, centerY, this.rightWidth, this.centerHeightScaled)
+					rightX, centerY, this.rightWidth, centerHeightScaled)
 			}
 
 			if (this.bottomHeight > 0) {
@@ -167,12 +142,15 @@ class NineSlice {
 		}
 	}
 
-	public drawDebug(context: CanvasRenderingContext2D, x: number, y: number) {
+	public drawDebug(context: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
 		context.save()
 
 		context.strokeStyle = "#00ff00"
 		context.setLineDash([5])
 
+		const width = Math.max(w, this.centerWidthUnscaled)
+		const height = Math.max(h, this.centerHeightUnscaled)
+
 		this.drawLine(context,
 			{
 				x: x + this.left,
@@ -180,18 +158,18 @@ class NineSlice {
 			},
 			{
 				x: x + this.left,
-				y: y + this.height,
+				y: y + height,
 			}
 		)
 
 		this.drawLine(context,
 			{
-				x: x + this.width - this.rightWidth,
+				x: x + width - this.rightWidth,
 				y: y,
 			},
 			{
-				x: x + this.width - this.rightWidth,
-				y: y + this.height,
+				x: x + width - this.rightWidth,
+				y: y + height,
 			}
 		)
 
@@ -201,7 +179,7 @@ class NineSlice {
 				y: y + this.top,
 			},
 			{
-				x: x + this.width,
+				x: x + width,
 				y: y + this.top,
 			}
 		)
@@ -209,11 +187,11 @@ class NineSlice {
 		this.drawLine(context,
 			{
 				x: x,
-				y: y + this.height - this.bottomHeight,
+				y: y + height - this.bottomHeight,
 			},
 			{
-				x: x + this.width,
-				y: y + this.height - this.bottomHeight,
+				x: x + width,
+				y: y + height - this.bottomHeight,
 			}
 		)
 
@@ -226,4 +204,14 @@ class NineSlice {
 		context.lineTo(p1.x, p1.y)
 		context.stroke()
 	}
+}
+
+interface IScalabeContent {
+	draw: (
+		context: CanvasRenderingContext2D,
+		x: number,
+		y: number,
+		w: number,
+		h: number
+	) => void
 }

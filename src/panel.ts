@@ -12,14 +12,19 @@ enum ResizeState {
 class Panel {
     private texture: NineSlice
 
+    public id: number = -1 
+
     public x: number
     public y: number
     public z: number
-    public w: number
-    public h: number
+    private w: number
+    private h: number
 
-    private selected = false
     private resize = ResizeState.NONE
+
+    public get selected() {
+        return PanelManager.activePanel === this.id
+    }
 
     public get bounds() {
         return new AABB(
@@ -102,26 +107,27 @@ class Panel {
         )
     }
 
-    constructor(canvas: HTMLCanvasElement, texture: NineSlice, x: number, y: number, z: number, w: number, h: number) {
+    constructor(canvas: HTMLCanvasElement, texture: NineSlice, x: number, y: number, w: number, h: number) {
         this.x = x
         this.y = y
-        this.z = z
+        this.z = 0
         this.w = w
         this.h = h
 
         this.texture = texture
-        this.texture.resize(w, h)
 
         let mouseX = 0
         let mouseY = 0
-        let mousedown = false
 
         document.body.addEventListener("mousedown", (e) => {
             const { x, y } = this.getMousePos(canvas, e)
     
             mouseX = x
             mouseY = y
-            mousedown = true
+
+            if (this.bounds.check(x, y)) {
+                PanelManager.setactive(this)
+            }
 
             if (this.topLeftResizer.check(x, y) ||
                 this.topResizer.check(x, y) ||
@@ -135,37 +141,31 @@ class Panel {
                 this.bottomResizer.check(x, y)) {
                 this.addResizeState(ResizeState.VERTICAL)
                 canvas.style.cursor = "ns-resize"
-                return
             }
 
             if (this.leftResizer.check(x, y) ||
                 this.rightResizer.check(x, y)) {
                 this.addResizeState(ResizeState.HORIZONTAL)
                 canvas.style.cursor = "ew-resize"
-                return
             }
 
             if (this.topLeftResizer.check(x, y) ||
                 this.bottomRightResizer.check(x, y)) {
                 this.addResizeState(ResizeState.DIAGONAL)
                 canvas.style.cursor = "nwse-resize"
-                return
             }
 
             if (this.topRightResizer.check(x, y) ||
                 this.bottomLeftResizer.check(x, y)) {
                 this.addResizeState(ResizeState.DIAGONAL)
                 canvas.style.cursor = "nesw-resize"
-                return
             }
-
-            this.selected = this.bounds.check(x, y)
         })
 
         document.body.addEventListener("mousemove", (e) => {
             const { x, y } = this.getMousePos(canvas, e)
 
-            if (mousedown) {
+            if (this.selected) {
                 const deltaX = mouseX - x
                 const deltaY = mouseY - y
                 
@@ -194,11 +194,8 @@ class Panel {
                     }
 
                     this.constrain()
-                    texture.resize(this.w, this.h)
                     return
-                }
-
-                if (this.selected) {
+                } else {
                     this.x -= deltaX
                     this.y -= deltaY
                     this.constrain()
@@ -207,9 +204,8 @@ class Panel {
         })
 
         document.body.addEventListener("mouseup", () => {
-            mousedown = false
-            this.selected = false
             this.resize = ResizeState.NONE
+            PanelManager.activePanel = -1
 
             canvas.style.cursor = "auto"
         })
@@ -241,11 +237,11 @@ class Panel {
     }
 
     public draw(context: CanvasRenderingContext2D) {
-        this.texture.draw(context, this.x, this.y)
+        this.texture.draw(context, this.x, this.y, this.w, this.h)
     }
 
 	public drawDebug(context: CanvasRenderingContext2D) {
-        this.texture.drawDebug(context, this.x, this.y)
+        this.texture.drawDebug(context, this.x, this.y, this.w, this.h)
         this.bounds.drawDebug(context)
 
         this.topResizer.drawDebug(context)
@@ -257,5 +253,59 @@ class Panel {
         this.topRightResizer.drawDebug(context)
         this.bottomLeftResizer.drawDebug(context)
         this.bottomRightResizer.drawDebug(context)
+
+        context.save()
+        context.font = "16px Open Sans"
+        context.fillText(`id: ${this.id} z: ${this.z} active z: ${PanelManager.activePanel}`, this.x, this.y)
+        context.restore()
+    }
+}
+
+class PanelManager {
+    private static panels: Panel[] = []
+    
+    public static activePanel: number = -1
+    public static numPanels: number = 0
+
+    static add(panel: Panel) {
+        if (panel.id < 0) panel.id = this.numPanels
+        panel.z = this.panels.length
+
+        this.numPanels++
+        this.panels.push(panel)
+
+        return panel.z
+    }
+
+    static reorder() {
+        for (let i = 0; i < this.panels.length; i++) {
+            this.panels[i].z = i
+        }
+    }
+
+    static tofront(index: number) {
+        const panel = this.panels[index]
+        this.panels.splice(index, 1)
+
+        this.reorder()
+        return this.add(panel)
+    }
+
+    static setactive(panel: Panel) {
+        if (this.activePanel >= 0 &&
+            panel.z < this.panels[this.activePanel].z) {
+            return false
+        }
+
+        this.tofront(panel.z)
+        this.activePanel = panel.id
+        return true
+    }
+
+    static draw(context: CanvasRenderingContext2D) {
+        [...this.panels].sort((a, b) => a.z - b.z).forEach((panel) => {
+            panel.draw(context)
+            panel.drawDebug(context)
+        })
     }
 }

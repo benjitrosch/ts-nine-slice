@@ -1,3 +1,11 @@
+enum Tabs {
+    NINESLICE = 0,
+    DRAG_DROP = 1,
+    BOTH = 2,
+}
+
+let activeTab: Tabs = Tabs.BOTH
+
 window.onload = function() {
     const width = window.innerWidth
     const height = window.innerHeight
@@ -12,7 +20,6 @@ window.onload = function() {
     canvas.width = width
     canvas.height = height
 
-    let activeTab: Tabs = Tabs.BOTH
     const tabs = document.querySelectorAll('button')
     tabs.forEach((tab, i) => {
         tab.addEventListener('click', () => {
@@ -20,48 +27,36 @@ window.onload = function() {
 
             tab.classList.add('active')
             activeTab = i
-
-            draw(context)
         })
     })
 
-    const box = new AABB(width / 2, height / 2, 50, 50)
-
-    const nineslice = new NineSlice("./src/16x16_window.png", 55, 135, 20, 135, () => draw(context))
     const pattern = new Pattern(context, "./src/background_pattern.png")
-    nineslice.setPattern(pattern)
-    
-    const panel = new Panel(canvas, nineslice, width / 4, height / 8, 0, width / 2, height / 2)
+    const nineslice = new NineSlice("./src/16x16_window.png", 55, 135, 20, 135, pattern)
 
-    document.body.addEventListener("mousemove", (e) => {
-        draw(context)
-    })
+    PanelManager.add(new Panel(canvas, nineslice, 50, 150, width / 2, height / 2))
+    PanelManager.add(new Panel(canvas, nineslice, width / 4, height / 8, width / 2, height / 2))
+    PanelManager.add(new Panel(canvas, nineslice, width / 2, height / 4, width / 2, height / 2))
 
-    function draw(context: CanvasRenderingContext2D) {
-        context.clearRect(0, 0, width, height)
-
-        switch (activeTab) {
-            case Tabs.NINESLICE:
-                nineslice.draw(context, width / 4, height / 8)
-                nineslice.drawDebug(context, width / 4, height / 8)
-                break;
-
-            case Tabs.DRAG_DROP:
-                box.drawDebug(context)
-                break;
-
-            case Tabs.BOTH:
-                panel.draw(context)
-                panel.drawDebug(context)
-                break;
-        }
-    }
-
-    draw(context)
+    draw(context, () => context.clearRect(0, 0, width, height))
 }
 
-enum Tabs {
-    NINESLICE = 0,
-    DRAG_DROP = 1,
-    BOTH = 2,
+function draw(context: CanvasRenderingContext2D, clear: () => void) {
+    clear()
+
+    switch (activeTab) {
+        // case Tabs.NINESLICE:
+        //     nineslice.draw(context, width / 4, height / 8)
+        //     nineslice.drawDebug(context, width / 4, height / 8)
+        //     break;
+
+        // case Tabs.DRAG_DROP:
+        //     box.drawDebug(context)
+        //     break;
+
+        case Tabs.BOTH:
+            PanelManager.draw(context)
+            break;
+    }
+
+    requestAnimationFrame(() => draw(context, clear))
 }

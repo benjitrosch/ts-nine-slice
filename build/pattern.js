@@ -30,6 +30,16 @@ var Pattern = /** @class */ (function () {
         if (deg === void 0) { deg = 1; }
         this.rotation += deg;
     };
+    Pattern.prototype.draw = function (context, x, y, w, h) {
+        if (this.texture != null) {
+            context.save();
+            this.scroll(0.25, 0.25);
+            this.texture.setTransform(new DOMMatrix([this.rotation, 1, 1, 0, this.x, this.y]));
+            context.fillStyle = this.texture;
+            context.fillRect(x, y, w, h);
+            context.restore();
+        }
+    };
     return Pattern;
 }());
 //# sourceMappingURL=pattern.js.map

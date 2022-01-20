@@ -52,6 +52,14 @@ button {
     font-weight: bold;
 }
 
+button:hover {
+    background-color: #d7e6ff;
+}
+
 button:active, button.active {
     background-color: #c4aeff;
+}
+
+button:nth-of-type(3) {
+    background-color: #ff8aae;
 }

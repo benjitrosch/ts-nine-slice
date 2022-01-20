@@ -1,4 +1,13 @@
 "use strict";
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 var SELECTOR_SIZE = 64;
 var HALF_SELECTOR_SIZE = SELECTOR_SIZE / 2;
 var ResizeState;
@@ -10,25 +19,25 @@ var ResizeState;
     ResizeState[ResizeState["REPOSITION"] = 4] = "REPOSITION";
 })(ResizeState || (ResizeState = {}));
 var Panel = /** @class */ (function () {
-    function Panel(canvas, texture, x, y, z, w, h) {
+    function Panel(canvas, texture, x, y, w, h) {
         var _this = this;
-        this.selected = false;
+        this.id = -1;
         this.resize = ResizeState.NONE;
         this.x = x;
         this.y = y;
-        this.z = z;
+        this.z = 0;
         this.w = w;
         this.h = h;
         this.texture = texture;
-        this.texture.resize(w, h);
         var mouseX = 0;
         var mouseY = 0;
-        var mousedown = false;
         document.body.addEventListener("mousedown", function (e) {
             var _a = _this.getMousePos(canvas, e), x = _a.x, y = _a.y;
             mouseX = x;
             mouseY = y;
-            mousedown = true;
+            if (_this.bounds.check(x, y)) {
+                PanelManager.setactive(_this);
+            }
             if (_this.topLeftResizer.check(x, y) ||
                 _this.topResizer.check(x, y) ||
                 _this.topRightResizer.check(x, y) ||
@@ -40,31 +49,26 @@ var Panel = /** @class */ (function () {
                 _this.bottomResizer.check(x, y)) {
                 _this.addResizeState(ResizeState.VERTICAL);
                 canvas.style.cursor = "ns-resize";
-                return;
             }
             if (_this.leftResizer.check(x, y) ||
                 _this.rightResizer.check(x, y)) {
                 _this.addResizeState(ResizeState.HORIZONTAL);
                 canvas.style.cursor = "ew-resize";
-                return;
             }
             if (_this.topLeftResizer.check(x, y) ||
                 _this.bottomRightResizer.check(x, y)) {
                 _this.addResizeState(ResizeState.DIAGONAL);
                 canvas.style.cursor = "nwse-resize";
-                return;
             }
             if (_this.topRightResizer.check(x, y) ||
                 _this.bottomLeftResizer.check(x, y)) {
                 _this.addResizeState(ResizeState.DIAGONAL);
                 canvas.style.cursor = "nesw-resize";
-                return;
             }
-            _this.selected = _this.bounds.check(x, y);
         });
         document.body.addEventListener("mousemove", function (e) {
             var _a = _this.getMousePos(canvas, e), x = _a.x, y = _a.y;
-            if (mousedown) {
+            if (_this.selected) {
                 var deltaX = mouseX - x;
                 var deltaY = mouseY - y;
                 mouseX = x;
@@ -90,10 +94,9 @@ var Panel = /** @class */ (function () {
                         }
                     }
                     _this.constrain();
-                    texture.resize(_this.w, _this.h);
                     return;
                 }
-                if (_this.selected) {
+                else {
                     _this.x -= deltaX;
                     _this.y -= deltaY;
                     _this.constrain();
@@ -101,12 +104,18 @@ var Panel = /** @class */ (function () {
             }
         });
         document.body.addEventListener("mouseup", function () {
-            mousedown = false;
-            _this.selected = false;
             _this.resize = ResizeState.NONE;
+            PanelManager.activePanel = -1;
             canvas.style.cursor = "auto";
         });
     }
+    Object.defineProperty(Panel.prototype, "selected", {
+        get: function () {
+            return PanelManager.activePanel === this.id;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(Panel.prototype, "bounds", {
         get: function () {
             return new AABB(this.x, this.y, this.w, this.h);
@@ -190,10 +199,10 @@ var Panel = /** @class */ (function () {
         this.resize |= state;
     };
     Panel.prototype.draw = function (context) {
-        this.texture.draw(context, this.x, this.y);
+        this.texture.draw(context, this.x, this.y, this.w, this.h);
     };
     Panel.prototype.drawDebug = function (context) {
-        this.texture.drawDebug(context, this.x, this.y);
+        this.texture.drawDebug(context, this.x, this.y, this.w, this.h);
         this.bounds.drawDebug(context);
         this.topResizer.drawDebug(context);
         this.bottomResizer.drawDebug(context);
@@ -203,7 +212,53 @@ var Panel = /** @class */ (function () {
         this.topRightResizer.drawDebug(context);
         this.bottomLeftResizer.drawDebug(context);
         this.bottomRightResizer.drawDebug(context);
+        context.save();
+        context.font = "16px Open Sans";
+        context.fillText("id: " + this.id + " z: " + this.z + " active z: " + PanelManager.activePanel, this.x, this.y);
+        context.restore();
     };
     return Panel;
+}());
+var PanelManager = /** @class */ (function () {
+    function PanelManager() {
+    }
+    PanelManager.add = function (panel) {
+        if (panel.id < 0)
+            panel.id = this.numPanels;
+        panel.z = this.panels.length;
+        this.numPanels++;
+        this.panels.push(panel);
+        return panel.z;
+    };
+    PanelManager.reorder = function () {
+        for (var i = 0; i < this.panels.length; i++) {
+            this.panels[i].z = i;
+        }
+    };
+    PanelManager.tofront = function (index) {
+        var panel = this.panels[index];
+        this.panels.splice(index, 1);
+        this.reorder();
+        return this.add(panel);
+    };
+    PanelManager.setactive = function (panel) {
+        if (this.activePanel >= 0 &&
+            panel.z < this.panels[this.activePanel].z) {
+            return false;
+        }
+        this.tofront(panel.z);
+        this.activePanel = panel.id;
+        return true;
+    };
+    PanelManager.draw = function (context) {
+        __spreadArray([], this.panels, true).sort(function (a, b) { return a.z - b.z; }).forEach(function (panel) {
+            panel.draw(context);
+            panel.drawDebug(context);
+        });
+    };
+    PanelManager.panels = [];
+    PanelManager.activePanel = -1;
+    PanelManager.numPanels = 0;
+    return PanelManager;
 }());
 //# sourceMappingURL=panel.js.map
