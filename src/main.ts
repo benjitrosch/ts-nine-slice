@@ -23,9 +23,11 @@ window.onload = function() {
     const pattern = new Pattern(context, "./src/background_pattern.png")
     const nineslice = new NineSlice("./src/16x16_window.png", 55, 135, 20, 135, pattern)
 
-    PanelManager.add(new Panel(canvas, nineslice, 50, 150, width / 2, height / 2))
-    PanelManager.add(new Panel(canvas, nineslice, width / 4, height / 8, width / 2, height / 2))
-    PanelManager.add(new Panel(canvas, nineslice, width / 2, height / 4, width / 2, height / 2))
+    PanelManager.init(canvas)
+
+    PanelManager.add(new Panel(canvas, nineslice, 50, 150, width / 4, height / 2))
+    PanelManager.add(new Panel(canvas, nineslice, width / 3, height / 16, width / 2.5, height / 2))
+    PanelManager.add(new Panel(canvas, nineslice, width / 1.25, height / 2, width / 6, height / 3))
 
     DogManager.randomize(3, 5)
 

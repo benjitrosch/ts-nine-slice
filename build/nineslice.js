@@ -55,14 +55,12 @@ var NineSlice = /** @class */ (function () {
         if (this.loading) {
             return;
         }
-        var width = Math.max(w, this.centerWidthUnscaled);
-        var height = Math.max(h, this.centerHeightUnscaled);
-        var centerWidthScaled = width - this.left - this.rightWidth;
-        var centerHeightScaled = height - this.top - this.bottomHeight;
+        var centerWidthScaled = w - this.left - this.rightWidth;
+        var centerHeightScaled = h - this.top - this.bottomHeight;
         var centerX = x + this.left;
         var centerY = y + this.top;
-        var rightX = x + width - this.rightWidth;
-        var bottomY = y + height - this.bottomHeight;
+        var rightX = x + w - this.rightWidth;
+        var bottomY = y + h - this.bottomHeight;
         if (this.left > 0) {
             if (this.top > 0) {
                 // TOP LEFT
@@ -115,35 +113,33 @@ var NineSlice = /** @class */ (function () {
         context.save();
         context.strokeStyle = "#00ff00";
         context.setLineDash([5]);
-        var width = Math.max(w, this.centerWidthUnscaled);
-        var height = Math.max(h, this.centerHeightUnscaled);
         this.drawLine(context, {
             x: x + this.left,
             y: y,
         }, {
             x: x + this.left,
-            y: y + height,
+            y: y + h,
         });
         this.drawLine(context, {
-            x: x + width - this.rightWidth,
+            x: x + w - this.rightWidth,
             y: y,
         }, {
-            x: x + width - this.rightWidth,
-            y: y + height,
+            x: x + w - this.rightWidth,
+            y: y + h,
         });
         this.drawLine(context, {
             x: x,
             y: y + this.top,
         }, {
-            x: x + width,
+            x: x + w,
             y: y + this.top,
         });
         this.drawLine(context, {
             x: x,
-            y: y + height - this.bottomHeight,
+            y: y + h - this.bottomHeight,
         }, {
-            x: x + width,
-            y: y + height - this.bottomHeight,
+            x: x + w,
+            y: y + h - this.bottomHeight,
         });
         context.restore();
     };

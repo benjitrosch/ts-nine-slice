@@ -1,18 +1,18 @@
 class NineSlice {
 	private image: HTMLImageElement
 	public content: IScalabeContent | null
-	private loading: boolean
+	public loading: boolean
 
 	private top: number
 	private bottom: number
 	private left: number
 	private right: number
 
-	private get bottomHeight() {
+	public get bottomHeight() {
 		return this.image.height - this.bottom
 	}
 
-	private get rightWidth() {
+	public get rightWidth() {
 		return this.image.width - this.right
 	}
 
@@ -56,16 +56,13 @@ class NineSlice {
 			return
 		}
 
-		const width = Math.max(w, this.centerWidthUnscaled)
-		const height = Math.max(h, this.centerHeightUnscaled)
-
-		const centerWidthScaled = width - this.left - this.rightWidth
-		const centerHeightScaled = height - this.top - this.bottomHeight
+		const centerWidthScaled = w - this.left - this.rightWidth
+		const centerHeightScaled = h - this.top - this.bottomHeight
 		
 		const centerX = x + this.left
 		const centerY = y + this.top
-		const rightX = x + width - this.rightWidth
-		const bottomY = y + height - this.bottomHeight
+		const rightX = x + w - this.rightWidth
+		const bottomY = y + h - this.bottomHeight
 
 		if (this.left > 0) {
 			if (this.top > 0) {
@@ -152,9 +149,6 @@ class NineSlice {
 		context.strokeStyle = "#00ff00"
 		context.setLineDash([5])
 
-		const width = Math.max(w, this.centerWidthUnscaled)
-		const height = Math.max(h, this.centerHeightUnscaled)
-
 		this.drawLine(context,
 			{
 				x: x + this.left,
@@ -162,18 +156,18 @@ class NineSlice {
 			},
 			{
 				x: x + this.left,
-				y: y + height,
+				y: y + h,
 			}
 		)
 
 		this.drawLine(context,
 			{
-				x: x + width - this.rightWidth,
+				x: x + w - this.rightWidth,
 				y: y,
 			},
 			{
-				x: x + width - this.rightWidth,
-				y: y + height,
+				x: x + w - this.rightWidth,
+				y: y + h,
 			}
 		)
 
@@ -183,7 +177,7 @@ class NineSlice {
 				y: y + this.top,
 			},
 			{
-				x: x + width,
+				x: x + w,
 				y: y + this.top,
 			}
 		)
@@ -191,11 +185,11 @@ class NineSlice {
 		this.drawLine(context,
 			{
 				x: x,
-				y: y + height - this.bottomHeight,
+				y: y + h - this.bottomHeight,
 			},
 			{
-				x: x + width,
-				y: y + height - this.bottomHeight,
+				x: x + w,
+				y: y + h - this.bottomHeight,
 			}
 		)
 
