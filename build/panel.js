@@ -253,7 +253,7 @@ var PanelManager = /** @class */ (function () {
     PanelManager.draw = function (context) {
         __spreadArray([], this.panels, true).sort(function (a, b) { return a.z - b.z; }).forEach(function (panel) {
             panel.draw(context);
-            panel.drawDebug(context);
+            // panel.drawDebug(context)
         });
     };
     PanelManager.panels = [];

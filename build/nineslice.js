@@ -48,6 +48,9 @@ var NineSlice = /** @class */ (function () {
     NineSlice.prototype.clamp = function (num, min, max) {
         return Math.min(Math.max(num, min), max);
     };
+    NineSlice.prototype.getfitsize = function (w, h) {
+        return { w: w + this.left + this.rightWidth, h: h + this.top + this.bottomHeight };
+    };
     NineSlice.prototype.draw = function (context, x, y, w, h) {
         if (this.loading) {
             return;

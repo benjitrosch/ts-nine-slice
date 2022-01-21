@@ -1,6 +1,6 @@
 class NineSlice {
 	private image: HTMLImageElement
-	private content: IScalabeContent | null
+	public content: IScalabeContent | null
 	private loading: boolean
 
 	private top: number
@@ -45,6 +45,10 @@ class NineSlice {
 
 	private clamp(num: number, min: number, max: number) {
 		return Math.min(Math.max(num, min), max)
+	}
+
+	public getfitsize(w: number, h: number) {
+		return { w: w + this.left + this.rightWidth, h: h + this.top + this.bottomHeight }
 	}
 
 	public draw(context: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {

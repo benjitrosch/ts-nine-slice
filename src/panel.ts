@@ -305,7 +305,7 @@ class PanelManager {
     static draw(context: CanvasRenderingContext2D) {
         [...this.panels].sort((a, b) => a.z - b.z).forEach((panel) => {
             panel.draw(context)
-            panel.drawDebug(context)
+            // panel.drawDebug(context)
         })
     }
 }
