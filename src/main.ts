@@ -22,7 +22,7 @@ window.onload = function() {
         PanelManager.new()
     }
 
-    DogManager.randomize(3, 5)
+    DogManager.randomize(5, 8)
 
     draw(context, () => context.clearRect(0, 0, width, height))
 }

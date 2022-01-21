@@ -17,7 +17,7 @@ window.onload = function () {
     for (var i = 0; i < 5; i++) {
         PanelManager.new();
     }
-    DogManager.randomize(3, 5);
+    DogManager.randomize(5, 8);
     draw(context, function () { return context.clearRect(0, 0, width, height); });
 };
 function draw(context, clear) {
