@@ -7,9 +7,9 @@ class Button {
     public w: number = 0
     public h: number = 0
 
-    private onClick?: () => void
+    public onClick?: () => void
 
-    private get bounds() {
+    public get bounds() {
         return new AABB(
             this.x,
             this.y,
@@ -18,7 +18,7 @@ class Button {
         )
     }
 
-    constructor(canvas: HTMLCanvasElement, filepath: string, x: number, y: number, onClick?: () => void) {
+    constructor(filepath: string, x: number, y: number, onClick?: () => void) {
         this.loading = true
 
 		const image = new Image()
@@ -36,31 +36,13 @@ class Button {
 
         this.onClick = onClick
 
-        document.body.addEventListener('mousemove', (e) => {
-            const { x, y } = this.getMousePos(canvas, e)
-            canvas.style.cursor = "auto"
-
-            if (this.bounds.check(x, y)) {
-                canvas.style.cursor = "pointer"
-            }
-        })
-
         document.body.addEventListener('mousedown', (e) => {
-            const { x, y } = this.getMousePos(canvas, e)
+            const { x, y } = Canvas.Instance.getMousePos(e)
 
             if (this.bounds.check(x, y)) {
                 onClick && onClick()
             }
         })
-    }
-
-    private getMousePos(canvas: HTMLCanvasElement, e: MouseEvent) {
-        const rect = canvas.getBoundingClientRect()
-
-        return {
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top
-        }
     }
 
     public draw(context: CanvasRenderingContext2D) {

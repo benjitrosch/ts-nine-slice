@@ -12,7 +12,7 @@ enum ResizeState {
 class Panel {
     private texture: NineSlice
 
-    public id: number = -1 
+    public id: number
 
     public x: number
     public y: number
@@ -22,7 +22,7 @@ class Panel {
 
     public resizestate = ResizeState.NONE
 
-    private closebutton: Button
+    public closebutton: Button
 
     public get selected() {
         return PanelManager.activePanel === this.id
@@ -109,17 +109,17 @@ class Panel {
         )
     }
 
-    constructor(canvas: HTMLCanvasElement, texture: NineSlice, x: number, y: number, w: number, h: number) {
+    constructor(texture: NineSlice, id: number, x: number, y: number, z: number, w: number, h: number) {
         this.x = x
         this.y = y
-        this.z = 0
+        this.z = z
         this.w = w
         this.h = h
 
+        this.id = id
         this.texture = texture
 
         this.closebutton = new Button(
-            canvas,
             "./src/button.png",
             this.x + this.w - 50,
             this.y + 10,
@@ -218,12 +218,28 @@ class PanelManager {
     public static activePanel: number = -1
     public static numPanels: number = 0
 
+    private static newbutton: Button
+
+    private static get empty() {
+        return this.panels.length < 1
+    }
+
     static init(canvas: HTMLCanvasElement) {
+        this.newbutton = new Button(
+            './src/new_panel_button.png', 
+            0,
+            window.innerHeight - 256,
+            () => alert('hi'))
+
         let mouseX = 0
         let mouseY = 0
 
         const handleMouseDown = (e: MouseEvent) => {
-            const { x, y } = this.getMousePos(canvas, e)
+            if (this.empty) {
+                return
+            }
+
+            const { x, y } = Canvas.Instance.getMousePos(e)
     
             mouseX = x
             mouseY = y
@@ -272,8 +288,56 @@ class PanelManager {
         }
 
         const handleMouseMove = (e: MouseEvent) => {
-            const { x, y } = this.getMousePos(canvas, e)
+            if (this.empty) {
+                return
+            }
+
+            const { x, y } = Canvas.Instance.getMousePos(e)
             const panel = this.panels[this.panels.length - 1]
+
+            let hover = false
+            let resize = null
+            let button = false
+            this.panels.forEach((panel) => {
+                if (panel.closebutton.bounds.check(x, y)) {
+                    button = true
+                }
+
+                if (panel.bounds.check(x, y)) {
+                    hover = true
+                }
+
+                if (panel.topResizer.check(x, y) ||
+                    panel.bottomResizer.check(x, y)) {
+                    resize = "ns-resize"
+                }
+    
+                if (panel.leftResizer.check(x, y) ||
+                    panel.rightResizer.check(x, y)) {
+                    resize = "ew-resize"
+                }
+    
+                if (panel.topLeftResizer.check(x, y) ||
+                    panel.bottomRightResizer.check(x, y)) {
+                    resize = "nwse-resize"
+                }
+    
+                if (panel.topRightResizer.check(x, y) ||
+                    panel.bottomLeftResizer.check(x, y)) {
+                    resize = "nesw-resize"
+                }
+            })
+
+            if (this.newbutton.bounds.check(x, y)) {
+                button = true
+            }
+
+            canvas.style.cursor = resize != null ? resize : hover ? 'grab' : 'auto'
+
+            if (button) {
+                canvas.style.cursor = 'pointer'
+                return
+            }
             
             if (panel.selected) {
                 const deltaX = mouseX - x
@@ -313,6 +377,10 @@ class PanelManager {
         }
 
         const handleMouseUp = () => {
+            if (this.empty) {
+                return
+            }
+
             this.panels[this.panels.length - 1].resizestate = ResizeState.NONE
 
             this.activePanel = -1
@@ -322,6 +390,20 @@ class PanelManager {
         document.body.addEventListener("mousedown", handleMouseDown)
         document.body.addEventListener("mousemove", handleMouseMove)
         document.body.addEventListener("mouseup", handleMouseUp)
+    }
+
+    static new(context: CanvasRenderingContext2D) {
+        const { x, y } = this.getrandompos()
+        const { w, h } = this.getrandomsize()
+        
+        const pattern = new Pattern(context, "./src/background_pattern.png")
+        const nineslice = new NineSlice("./src/16x16_window.png", 55, 135, 20, 135, pattern)
+        
+        const panel = new Panel(nineslice, this.numPanels, x, y, this.panels.length, w, h)
+        panel.constrain()
+
+        this.numPanels++
+        this.panels.push(panel)
     }
 
     static add(panel: Panel) {
@@ -348,6 +430,20 @@ class PanelManager {
         }
     }
 
+    private static getrandompos() {
+        const x = Math.floor(Math.random() * window.innerWidth / 1.5);
+        const y = Math.floor(Math.random() * window.innerHeight / 4);
+
+        return { x, y }
+    }
+
+    private static getrandomsize() {
+        const w = Math.floor((Math.random() * window.innerWidth / 4) + window.innerWidth / 8);
+        const h = Math.floor((Math.random() * window.innerHeight / 4) + window.innerHeight / 5);
+
+        return { w, h }
+    }
+
     static tofront(index: number) {
         const panel = this.panels[index]
         this.panels.splice(index, 1)
@@ -367,16 +463,20 @@ class PanelManager {
         return true
     }
 
-    private static getMousePos(canvas: HTMLCanvasElement, e: MouseEvent) {
-        const rect = canvas.getBoundingClientRect()
-
-        return {
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top
-        }
-    }
-
     static draw(context: CanvasRenderingContext2D) {
+        this.newbutton.draw(context)
+        context.save()
+        const text = 'New File'
+
+        context.font = '24px Open Sans'
+        context.strokeStyle = 'black'
+        context.lineWidth = 4
+        context.fillStyle = 'white'
+
+        context.strokeText(text, 80, window.innerHeight - 80)
+        context.fillText(text, 80, window.innerHeight - 80)
+        context.restore();
+
         [...this.panels].sort((a, b) => a.z - b.z).forEach((panel) => {
             panel.draw(context)
             // panel.drawDebug(context)

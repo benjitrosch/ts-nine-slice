@@ -19,17 +19,17 @@ var ResizeState;
     ResizeState[ResizeState["REPOSITION"] = 4] = "REPOSITION";
 })(ResizeState || (ResizeState = {}));
 var Panel = /** @class */ (function () {
-    function Panel(canvas, texture, x, y, w, h) {
+    function Panel(texture, id, x, y, z, w, h) {
         var _this = this;
-        this.id = -1;
         this.resizestate = ResizeState.NONE;
         this.x = x;
         this.y = y;
-        this.z = 0;
+        this.z = z;
         this.w = w;
         this.h = h;
+        this.id = id;
         this.texture = texture;
-        this.closebutton = new Button(canvas, "./src/button.png", this.x + this.w - 50, this.y + 10, function () {
+        this.closebutton = new Button("./src/button.png", this.x + this.w - 50, this.y + 10, function () {
             // removeEventListener('mousedown', handleMouseDown)
             // removeEventListener('mousemove', handleMouseMove)
             // removeEventListener('mouseup', handleMouseUp)
@@ -170,12 +170,23 @@ var Panel = /** @class */ (function () {
 var PanelManager = /** @class */ (function () {
     function PanelManager() {
     }
+    Object.defineProperty(PanelManager, "empty", {
+        get: function () {
+            return this.panels.length < 1;
+        },
+        enumerable: false,
+        configurable: true
+    });
     PanelManager.init = function (canvas) {
         var _this = this;
+        this.newbutton = new Button('./src/new_panel_button.png', 0, window.innerHeight - 256, function () { return alert('hi'); });
         var mouseX = 0;
         var mouseY = 0;
         var handleMouseDown = function (e) {
-            var _a = _this.getMousePos(canvas, e), x = _a.x, y = _a.y;
+            if (_this.empty) {
+                return;
+            }
+            var _a = Canvas.Instance.getMousePos(e), x = _a.x, y = _a.y;
             mouseX = x;
             mouseY = y;
             for (var i = _this.panels.length - 1; i >= 0; i--) {
@@ -214,8 +225,46 @@ var PanelManager = /** @class */ (function () {
             }
         };
         var handleMouseMove = function (e) {
-            var _a = _this.getMousePos(canvas, e), x = _a.x, y = _a.y;
+            if (_this.empty) {
+                return;
+            }
+            var _a = Canvas.Instance.getMousePos(e), x = _a.x, y = _a.y;
             var panel = _this.panels[_this.panels.length - 1];
+            var hover = false;
+            var resize = null;
+            var button = false;
+            _this.panels.forEach(function (panel) {
+                if (panel.closebutton.bounds.check(x, y)) {
+                    button = true;
+                }
+                if (panel.bounds.check(x, y)) {
+                    hover = true;
+                }
+                if (panel.topResizer.check(x, y) ||
+                    panel.bottomResizer.check(x, y)) {
+                    resize = "ns-resize";
+                }
+                if (panel.leftResizer.check(x, y) ||
+                    panel.rightResizer.check(x, y)) {
+                    resize = "ew-resize";
+                }
+                if (panel.topLeftResizer.check(x, y) ||
+                    panel.bottomRightResizer.check(x, y)) {
+                    resize = "nwse-resize";
+                }
+                if (panel.topRightResizer.check(x, y) ||
+                    panel.bottomLeftResizer.check(x, y)) {
+                    resize = "nesw-resize";
+                }
+            });
+            if (_this.newbutton.bounds.check(x, y)) {
+                button = true;
+            }
+            canvas.style.cursor = resize != null ? resize : hover ? 'grab' : 'auto';
+            if (button) {
+                canvas.style.cursor = 'pointer';
+                return;
+            }
             if (panel.selected) {
                 var deltaX = mouseX - x;
                 var deltaY = mouseY - y;
@@ -251,6 +300,9 @@ var PanelManager = /** @class */ (function () {
             }
         };
         var handleMouseUp = function () {
+            if (_this.empty) {
+                return;
+            }
             _this.panels[_this.panels.length - 1].resizestate = ResizeState.NONE;
             _this.activePanel = -1;
             canvas.style.cursor = "auto";
@@ -258,6 +310,16 @@ var PanelManager = /** @class */ (function () {
         document.body.addEventListener("mousedown", handleMouseDown);
         document.body.addEventListener("mousemove", handleMouseMove);
         document.body.addEventListener("mouseup", handleMouseUp);
+    };
+    PanelManager.new = function (context) {
+        var _a = this.getrandompos(), x = _a.x, y = _a.y;
+        var _b = this.getrandomsize(), w = _b.w, h = _b.h;
+        var pattern = new Pattern(context, "./src/background_pattern.png");
+        var nineslice = new NineSlice("./src/16x16_window.png", 55, 135, 20, 135, pattern);
+        var panel = new Panel(nineslice, this.numPanels, x, y, this.panels.length, w, h);
+        panel.constrain();
+        this.numPanels++;
+        this.panels.push(panel);
     };
     PanelManager.add = function (panel) {
         if (panel.id < 0)
@@ -278,6 +340,16 @@ var PanelManager = /** @class */ (function () {
             this.panels[i].z = i;
         }
     };
+    PanelManager.getrandompos = function () {
+        var x = Math.floor(Math.random() * window.innerWidth / 1.5);
+        var y = Math.floor(Math.random() * window.innerHeight / 4);
+        return { x: x, y: y };
+    };
+    PanelManager.getrandomsize = function () {
+        var w = Math.floor((Math.random() * window.innerWidth / 4) + window.innerWidth / 8);
+        var h = Math.floor((Math.random() * window.innerHeight / 4) + window.innerHeight / 5);
+        return { w: w, h: h };
+    };
     PanelManager.tofront = function (index) {
         var panel = this.panels[index];
         this.panels.splice(index, 1);
@@ -293,14 +365,17 @@ var PanelManager = /** @class */ (function () {
         this.activePanel = panel.id;
         return true;
     };
-    PanelManager.getMousePos = function (canvas, e) {
-        var rect = canvas.getBoundingClientRect();
-        return {
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
-        };
-    };
     PanelManager.draw = function (context) {
+        this.newbutton.draw(context);
+        context.save();
+        var text = 'New File';
+        context.font = '24px Open Sans';
+        context.strokeStyle = 'black';
+        context.lineWidth = 4;
+        context.fillStyle = 'white';
+        context.strokeText(text, 80, window.innerHeight - 80);
+        context.fillText(text, 80, window.innerHeight - 80);
+        context.restore();
         __spreadArray([], this.panels, true).sort(function (a, b) { return a.z - b.z; }).forEach(function (panel) {
             panel.draw(context);
             // panel.drawDebug(context)

@@ -1,6 +1,6 @@
 "use strict";
 var Button = /** @class */ (function () {
-    function Button(canvas, filepath, x, y, onClick) {
+    function Button(filepath, x, y, onClick) {
         var _this = this;
         this.w = 0;
         this.h = 0;
@@ -16,15 +16,8 @@ var Button = /** @class */ (function () {
         this.x = x;
         this.y = y;
         this.onClick = onClick;
-        document.body.addEventListener('mousemove', function (e) {
-            var _a = _this.getMousePos(canvas, e), x = _a.x, y = _a.y;
-            canvas.style.cursor = "auto";
-            if (_this.bounds.check(x, y)) {
-                canvas.style.cursor = "pointer";
-            }
-        });
         document.body.addEventListener('mousedown', function (e) {
-            var _a = _this.getMousePos(canvas, e), x = _a.x, y = _a.y;
+            var _a = Canvas.Instance.getMousePos(e), x = _a.x, y = _a.y;
             if (_this.bounds.check(x, y)) {
                 onClick && onClick();
             }
@@ -37,13 +30,6 @@ var Button = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
-    Button.prototype.getMousePos = function (canvas, e) {
-        var rect = canvas.getBoundingClientRect();
-        return {
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
-        };
-    };
     Button.prototype.draw = function (context) {
         if (this.loading) {
             return;

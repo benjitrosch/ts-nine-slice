@@ -8,20 +8,17 @@ var url = new URL((window.location.href).toLowerCase());
 var activeTab = url.searchParams.get("tab");
 window.onload = function () {
     var width = window.innerWidth;
-    var height = window.innerHeight;
-    var canvas = document.getElementById("canvas");
-    var context = canvas.getContext("2d");
-    if (!canvas || !context) {
-        return;
-    }
+    var height = window.innerHeight - 48;
+    var canvas = Canvas.Instance.canvas;
+    var context = Canvas.Instance.getContext2D();
     canvas.width = width;
     canvas.height = height;
-    var pattern = new Pattern(context, "./src/background_pattern.png");
-    var nineslice = new NineSlice("./src/16x16_window.png", 55, 135, 20, 135, pattern);
-    PanelManager.init(canvas);
-    PanelManager.add(new Panel(canvas, nineslice, 50, 150, width / 4, height / 2));
-    PanelManager.add(new Panel(canvas, nineslice, width / 3, height / 16, width / 2.5, height / 2));
-    PanelManager.add(new Panel(canvas, nineslice, width / 1.25, height / 2, width / 6, height / 3));
+    PanelManager.init(Canvas.Instance.canvas);
+    PanelManager.new(context);
+    PanelManager.new(context);
+    PanelManager.new(context);
+    PanelManager.new(context);
+    PanelManager.new(context);
     DogManager.randomize(3, 5);
     draw(context, function () { return context.clearRect(0, 0, width, height); });
 };
