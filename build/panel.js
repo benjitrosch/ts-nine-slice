@@ -29,10 +29,7 @@ var Panel = /** @class */ (function () {
         this.h = h;
         this.id = id;
         this.texture = texture;
-        this.closebutton = new Button("./src/button.png", this.x + this.w - 50, this.y + 10, function () {
-            // removeEventListener('mousedown', handleMouseDown)
-            // removeEventListener('mousemove', handleMouseMove)
-            // removeEventListener('mouseup', handleMouseUp)
+        this.closebutton = new Button("./src/button.png", this.x + this.w - 25, this.y + 6, function () {
             PanelManager.remove(_this.id);
         });
     }
@@ -109,14 +106,14 @@ var Panel = /** @class */ (function () {
     Panel.prototype.resize = function (w, h) {
         this.w = w;
         this.h = h;
-        this.closebutton.x = this.x + this.w - 50;
-        this.closebutton.y = this.y + 10;
+        this.closebutton.x = this.x + this.w - 25;
+        this.closebutton.y = this.y + 6;
     };
     Panel.prototype.reposition = function (x, y) {
         this.x = x;
         this.y = y;
-        this.closebutton.x = this.x + this.w - 50;
-        this.closebutton.y = this.y + 10;
+        this.closebutton.x = this.x + this.w - 25;
+        this.closebutton.y = this.y + 6;
     };
     Panel.prototype.clamp = function (num, min, max) {
         return Math.min(Math.max(num, min), max);
@@ -134,9 +131,9 @@ var Panel = /** @class */ (function () {
         this.texture.draw(context, this.x, this.y, this.w, this.h);
         this.closebutton.draw(context);
         context.save();
-        context.font = "24px Open Sans";
-        var offsetX = 16;
-        var offsetY = 32;
+        context.font = "16px Open Sans";
+        var offsetX = 8;
+        var offsetY = 18;
         var text = "id: " + this.id + " / z order: " + this.z + " / active: " + PanelManager.activePanel;
         var numLetters = text.length;
         var textWidth = context.measureText(text).width;
@@ -167,6 +164,7 @@ var Panel = /** @class */ (function () {
     };
     return Panel;
 }());
+var MAX_PANELS = 16;
 var PanelManager = /** @class */ (function () {
     function PanelManager() {
     }
@@ -179,7 +177,7 @@ var PanelManager = /** @class */ (function () {
     });
     PanelManager.init = function (canvas) {
         var _this = this;
-        this.newbutton = new Button('./src/new_panel_button.png', 0, window.innerHeight - 256, function () { return alert('hi'); });
+        this.newbutton = new Button('./src/new_panel_button.png', 32, window.innerHeight - 160, function () { return _this.new(); });
         var mouseX = 0;
         var mouseY = 0;
         var handleMouseDown = function (e) {
@@ -225,10 +223,13 @@ var PanelManager = /** @class */ (function () {
             }
         };
         var handleMouseMove = function (e) {
+            var _a = Canvas.Instance.getMousePos(e), x = _a.x, y = _a.y;
+            if (_this.newbutton.bounds.check(x, y)) {
+                canvas.style.cursor = 'pointer';
+            }
             if (_this.empty) {
                 return;
             }
-            var _a = Canvas.Instance.getMousePos(e), x = _a.x, y = _a.y;
             var panel = _this.panels[_this.panels.length - 1];
             var hover = false;
             var resize = null;
@@ -300,10 +301,9 @@ var PanelManager = /** @class */ (function () {
             }
         };
         var handleMouseUp = function () {
-            if (_this.empty) {
-                return;
+            if (!_this.empty) {
+                _this.panels[_this.panels.length - 1].resizestate = ResizeState.NONE;
             }
-            _this.panels[_this.panels.length - 1].resizestate = ResizeState.NONE;
             _this.activePanel = -1;
             canvas.style.cursor = "auto";
         };
@@ -311,11 +311,15 @@ var PanelManager = /** @class */ (function () {
         document.body.addEventListener("mousemove", handleMouseMove);
         document.body.addEventListener("mouseup", handleMouseUp);
     };
-    PanelManager.new = function (context) {
+    PanelManager.new = function () {
+        if (this.panels.length >= MAX_PANELS) {
+            return;
+        }
         var _a = this.getrandompos(), x = _a.x, y = _a.y;
         var _b = this.getrandomsize(), w = _b.w, h = _b.h;
+        var context = Canvas.Instance.context;
         var pattern = new Pattern(context, "./src/background_pattern.png");
-        var nineslice = new NineSlice("./src/16x16_window.png", 55, 135, 20, 135, pattern);
+        var nineslice = new NineSlice("./src/16x16_window.png", 28, 68, 10, 68, pattern);
         var panel = new Panel(nineslice, this.numPanels, x, y, this.panels.length, w, h);
         panel.constrain();
         this.numPanels++;
@@ -369,12 +373,14 @@ var PanelManager = /** @class */ (function () {
         this.newbutton.draw(context);
         context.save();
         var text = 'New File';
-        context.font = '24px Open Sans';
+        context.font = '16px Open Sans';
         context.strokeStyle = 'black';
         context.lineWidth = 4;
         context.fillStyle = 'white';
-        context.strokeText(text, 80, window.innerHeight - 80);
-        context.fillText(text, 80, window.innerHeight - 80);
+        var x = 48;
+        var y = window.innerHeight - 64;
+        context.strokeText(text, x, y);
+        context.fillText(text, x, y);
         context.restore();
         __spreadArray([], this.panels, true).sort(function (a, b) { return a.z - b.z; }).forEach(function (panel) {
             panel.draw(context);

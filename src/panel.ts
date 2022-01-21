@@ -121,13 +121,9 @@ class Panel {
 
         this.closebutton = new Button(
             "./src/button.png",
-            this.x + this.w - 50,
-            this.y + 10,
+            this.x + this.w - 25,
+            this.y + 6,
             () => {
-                // removeEventListener('mousedown', handleMouseDown)
-                // removeEventListener('mousemove', handleMouseMove)
-                // removeEventListener('mouseup', handleMouseUp)
-
                 PanelManager.remove(this.id)
             }
         )
@@ -137,16 +133,16 @@ class Panel {
         this.w = w
         this.h = h
 
-        this.closebutton.x = this.x + this.w - 50
-        this.closebutton.y = this.y + 10
+        this.closebutton.x = this.x + this.w - 25
+        this.closebutton.y = this.y + 6
     }
 
     public reposition(x: number, y: number) {
         this.x = x
         this.y = y
 
-        this.closebutton.x = this.x + this.w - 50
-        this.closebutton.y = this.y + 10
+        this.closebutton.x = this.x + this.w - 25
+        this.closebutton.y = this.y + 6
     }
 
     private clamp(num: number, min: number, max: number) {
@@ -170,10 +166,10 @@ class Panel {
         this.closebutton.draw(context)
         
         context.save()
-        context.font = "24px Open Sans"
+        context.font = "16px Open Sans"
 
-        const offsetX = 16
-        const offsetY = 32
+        const offsetX = 8
+        const offsetY = 18
 
         let text = `id: ${this.id} / z order: ${this.z} / active: ${PanelManager.activePanel}`
         const numLetters = text.length
@@ -212,6 +208,8 @@ class Panel {
     }
 }
 
+const MAX_PANELS = 16
+
 class PanelManager {
     private static panels: Panel[] = []
     
@@ -227,9 +225,9 @@ class PanelManager {
     static init(canvas: HTMLCanvasElement) {
         this.newbutton = new Button(
             './src/new_panel_button.png', 
-            0,
-            window.innerHeight - 256,
-            () => alert('hi'))
+            32,
+            window.innerHeight - 160,
+            () => this.new())
 
         let mouseX = 0
         let mouseY = 0
@@ -288,16 +286,22 @@ class PanelManager {
         }
 
         const handleMouseMove = (e: MouseEvent) => {
+            const { x, y } = Canvas.Instance.getMousePos(e)
+
+            if (this.newbutton.bounds.check(x, y)) {
+                canvas.style.cursor = 'pointer'
+            }
+            
             if (this.empty) {
                 return
             }
 
-            const { x, y } = Canvas.Instance.getMousePos(e)
             const panel = this.panels[this.panels.length - 1]
 
             let hover = false
             let resize = null
             let button = false
+            
             this.panels.forEach((panel) => {
                 if (panel.closebutton.bounds.check(x, y)) {
                     button = true
@@ -377,11 +381,9 @@ class PanelManager {
         }
 
         const handleMouseUp = () => {
-            if (this.empty) {
-                return
+            if (!this.empty) {
+                this.panels[this.panels.length - 1].resizestate = ResizeState.NONE
             }
-
-            this.panels[this.panels.length - 1].resizestate = ResizeState.NONE
 
             this.activePanel = -1
             canvas.style.cursor = "auto"
@@ -392,12 +394,18 @@ class PanelManager {
         document.body.addEventListener("mouseup", handleMouseUp)
     }
 
-    static new(context: CanvasRenderingContext2D) {
+    static new() {
+        if (this.panels.length >= MAX_PANELS) {
+            return
+        }
+
         const { x, y } = this.getrandompos()
         const { w, h } = this.getrandomsize()
+
+        const context = Canvas.Instance.context
         
         const pattern = new Pattern(context, "./src/background_pattern.png")
-        const nineslice = new NineSlice("./src/16x16_window.png", 55, 135, 20, 135, pattern)
+        const nineslice = new NineSlice("./src/16x16_window.png", 28, 68, 10, 68, pattern)
         
         const panel = new Panel(nineslice, this.numPanels, x, y, this.panels.length, w, h)
         panel.constrain()
@@ -468,13 +476,16 @@ class PanelManager {
         context.save()
         const text = 'New File'
 
-        context.font = '24px Open Sans'
+        context.font = '16px Open Sans'
         context.strokeStyle = 'black'
         context.lineWidth = 4
         context.fillStyle = 'white'
 
-        context.strokeText(text, 80, window.innerHeight - 80)
-        context.fillText(text, 80, window.innerHeight - 80)
+        const x = 48
+        const y = window.innerHeight - 64
+
+        context.strokeText(text, x,y)
+        context.fillText(text, x, y)
         context.restore();
 
         [...this.panels].sort((a, b) => a.z - b.z).forEach((panel) => {

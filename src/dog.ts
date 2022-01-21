@@ -33,7 +33,7 @@ class Dog implements IScalabeContent {
             return
         }
 
-        context.drawImage(this.image, x, y)
+        context.drawImage(this.image, x, y, w, h)
     }
 }
 
@@ -56,8 +56,8 @@ class DogManager {
                 photo,
                 x,
                 y,
-                w: dog.image.width,
-                h: dog.image.height
+                w: dog.image.width / 2,
+                h: dog.image.height / 2
             })
         })
     } 
@@ -72,8 +72,8 @@ class DogManager {
     }
 
     private static getrandompos() {
-        const x = Math.floor((Math.random() * window.innerWidth) + 1);
-        const y = Math.floor((Math.random() * window.innerHeight / 4) + 1);
+        const x = Math.floor(Math.random() * window.innerWidth)
+        const y = Math.floor(Math.random() * window.innerHeight / 2)
 
         return { x, y }
     }

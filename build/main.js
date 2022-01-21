@@ -10,15 +10,13 @@ window.onload = function () {
     var width = window.innerWidth;
     var height = window.innerHeight - 48;
     var canvas = Canvas.Instance.canvas;
-    var context = Canvas.Instance.getContext2D();
+    var context = Canvas.Instance.context;
     canvas.width = width;
     canvas.height = height;
     PanelManager.init(Canvas.Instance.canvas);
-    PanelManager.new(context);
-    PanelManager.new(context);
-    PanelManager.new(context);
-    PanelManager.new(context);
-    PanelManager.new(context);
+    for (var i = 0; i < 5; i++) {
+        PanelManager.new();
+    }
     DogManager.randomize(3, 5);
     draw(context, function () { return context.clearRect(0, 0, width, height); });
 };
@@ -26,6 +24,7 @@ function draw(context, clear) {
     clear();
     switch (activeTab) {
         case Tabs.HALL_OF_DOGS:
+            Canvas.Instance.canvas.style.background = 'url("./src/vintage-wallpaper-5.jpg")';
             DogManager.draw(context);
             break;
         case Tabs.FAKE_WINDOWS:

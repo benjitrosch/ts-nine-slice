@@ -83,7 +83,7 @@ var Dog = /** @class */ (function () {
         if (!this.loaded) {
             return;
         }
-        context.drawImage(this.image, x, y);
+        context.drawImage(this.image, x, y, w, h);
     };
     return Dog;
 }());
@@ -98,8 +98,8 @@ var DogManager = /** @class */ (function () {
                 photo: photo,
                 x: x,
                 y: y,
-                w: dog.image.width,
-                h: dog.image.height
+                w: dog.image.width / 2,
+                h: dog.image.height / 2
             });
         });
     };
@@ -111,8 +111,8 @@ var DogManager = /** @class */ (function () {
         }
     };
     DogManager.getrandompos = function () {
-        var x = Math.floor((Math.random() * window.innerWidth) + 1);
-        var y = Math.floor((Math.random() * window.innerHeight / 4) + 1);
+        var x = Math.floor(Math.random() * window.innerWidth);
+        var y = Math.floor(Math.random() * window.innerHeight / 2);
         return { x: x, y: y };
     };
     DogManager.clamp = function (num, min, max) {

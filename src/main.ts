@@ -11,18 +11,16 @@ window.onload = function() {
     const height = window.innerHeight - 48
 
     const canvas = Canvas.Instance.canvas
-    const context = Canvas.Instance.getContext2D()
+    const context = Canvas.Instance.context
 
     canvas.width = width
     canvas.height = height
     
     PanelManager.init(Canvas.Instance.canvas)
 
-    PanelManager.new(context)
-    PanelManager.new(context)
-    PanelManager.new(context)
-    PanelManager.new(context)
-    PanelManager.new(context)
+    for (let i = 0; i < 5; i++) {
+        PanelManager.new()
+    }
 
     DogManager.randomize(3, 5)
 
@@ -34,6 +32,7 @@ function draw(context: CanvasRenderingContext2D, clear: () => void) {
 
     switch (activeTab) {
         case Tabs.HALL_OF_DOGS:
+            Canvas.Instance.canvas.style.background = 'url("./src/vintage-wallpaper-5.jpg")'
             DogManager.draw(context)
             break;
 

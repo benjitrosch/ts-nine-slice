@@ -8,19 +8,25 @@ class Canvas {
     public canvas: HTMLCanvasElement
     public mousePos: { x: number, y: number }
 
+    public get context() {
+        return this.canvas.getContext('2d')!
+    }
+
+    private get dpi() {
+        return window.devicePixelRatio;
+    }
+
     constructor(element: HTMLCanvasElement) {
         this.canvas = element
         this.mousePos = { x: 0, y: 0 }
 
         this.canvas.onmousemove = (e) => this.getMousePos(e)
         this.canvas.oncontextmenu = (e) => e.preventDefault()
+
+        this.fixdpi()
     }
 
-    getContext2D() {
-        return this.canvas.getContext('2d')!
-    }
-    
-    getMousePos(e: MouseEvent) {
+    public getMousePos(e: MouseEvent) {
         const rect = this.canvas.getBoundingClientRect()
 
         return {
@@ -28,5 +34,12 @@ class Canvas {
           y: e.clientY - rect.top
         }
     }
-    
+ 
+    public fixdpi() {
+        const w = +getComputedStyle(this.canvas).getPropertyValue("width").slice(0, -2)
+        const h = +getComputedStyle(this.canvas).getPropertyValue("height").slice(0, -2)
+
+        this.canvas.setAttribute('width', (w * this.dpi).toString());
+        this.canvas.setAttribute('height', (h * this.dpi).toString());
+    }
 }
