@@ -50,7 +50,7 @@ class DogManager {
 
     static add(x: number, y: number) {
         const dog = new Dog(() => {
-            const photo = new NineSlice("./src/frame.png", 64, 366, 63, 444, dog)
+            const photo = new NineSlice("./src/assets/frame.png", 64, 366, 63, 444, dog)
 
             this.dogs.push({
                 photo,

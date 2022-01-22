@@ -39,7 +39,7 @@ function draw(context, clear) {
             PanelManager.draw(context);
             break;
         case Tabs.HALL_OF_DOGS:
-            Canvas.Instance.canvas.style.background = 'url("./src/vintage-wallpaper-5.jpg")';
+            Canvas.Instance.canvas.style.background = 'url("./src/assets/vintage-wallpaper-5.jpg")';
             DogManager.draw(context);
             break;
         case Tabs.DIALOGUE_BOX:

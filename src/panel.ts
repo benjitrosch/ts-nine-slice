@@ -120,7 +120,7 @@ class Panel {
         this.texture = texture
 
         this.closebutton = new Button(
-            "./src/button.png",
+            "./src/assets/button.png",
             this.x + this.w - 25,
             this.y + 6,
             () => {
@@ -224,7 +224,7 @@ class PanelManager {
 
     static init(canvas: HTMLCanvasElement) {
         this.newbutton = new Button(
-            './src/new_panel_button.png', 
+            './src/assets/new_panel_button.png', 
             32,
             window.innerHeight - 160,
             () => this.new())
@@ -404,8 +404,8 @@ class PanelManager {
 
         const context = Canvas.Instance.context
         
-        const pattern = new Pattern(context, "./src/background_pattern.png")
-        const nineslice = new NineSlice("./src/16x16_window.png", 28, 68, 10, 68, pattern)
+        const pattern = new Pattern(context, "./src/assets/background_pattern.png")
+        const nineslice = new NineSlice("./src/assets/16x16_window.png", 28, 68, 10, 68, pattern)
         
         const panel = new Panel(nineslice, this.numPanels, x, y, this.panels.length, w, h)
         panel.constrain()

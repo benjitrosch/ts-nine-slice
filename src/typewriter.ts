@@ -14,7 +14,7 @@ class Typewriter {
         this.fulltext = dialogue
         this.currentletter = 0
 
-        this.dialoguebox = new NineSlice('./src/dialogue_box.png', 15, 65, 15, 65)
+        this.dialoguebox = new NineSlice('./src/assets/dialogue_box.png', 15, 65, 15, 65)
 
         this.type(Canvas.Instance.context)
     }

@@ -49,7 +49,7 @@ function draw(context: CanvasRenderingContext2D, clear: () => void) {
             break
 
         case Tabs.HALL_OF_DOGS:
-            Canvas.Instance.canvas.style.background = 'url("./src/vintage-wallpaper-5.jpg")'
+            Canvas.Instance.canvas.style.background = 'url("./src/assets/vintage-wallpaper-5.jpg")'
             DogManager.draw(context)
             break
 

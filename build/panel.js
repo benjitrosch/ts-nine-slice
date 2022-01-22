@@ -29,7 +29,7 @@ var Panel = /** @class */ (function () {
         this.h = h;
         this.id = id;
         this.texture = texture;
-        this.closebutton = new Button("./src/button.png", this.x + this.w - 25, this.y + 6, function () {
+        this.closebutton = new Button("./src/assets/button.png", this.x + this.w - 25, this.y + 6, function () {
             PanelManager.remove(_this.id);
         });
     }
@@ -177,7 +177,7 @@ var PanelManager = /** @class */ (function () {
     });
     PanelManager.init = function (canvas) {
         var _this = this;
-        this.newbutton = new Button('./src/new_panel_button.png', 32, window.innerHeight - 160, function () { return _this.new(); });
+        this.newbutton = new Button('./src/assets/new_panel_button.png', 32, window.innerHeight - 160, function () { return _this.new(); });
         var mouseX = 0;
         var mouseY = 0;
         var handleMouseDown = function (e) {
@@ -318,8 +318,8 @@ var PanelManager = /** @class */ (function () {
         var _a = this.getrandompos(), x = _a.x, y = _a.y;
         var _b = this.getrandomsize(), w = _b.w, h = _b.h;
         var context = Canvas.Instance.context;
-        var pattern = new Pattern(context, "./src/background_pattern.png");
-        var nineslice = new NineSlice("./src/16x16_window.png", 28, 68, 10, 68, pattern);
+        var pattern = new Pattern(context, "./src/assets/background_pattern.png");
+        var nineslice = new NineSlice("./src/assets/16x16_window.png", 28, 68, 10, 68, pattern);
         var panel = new Panel(nineslice, this.numPanels, x, y, this.panels.length, w, h);
         panel.constrain();
         this.numPanels++;

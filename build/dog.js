@@ -93,7 +93,7 @@ var DogManager = /** @class */ (function () {
     DogManager.add = function (x, y) {
         var _this = this;
         var dog = new Dog(function () {
-            var photo = new NineSlice("./src/frame.png", 64, 366, 63, 444, dog);
+            var photo = new NineSlice("./src/assets/frame.png", 64, 366, 63, 444, dog);
             _this.dogs.push({
                 photo: photo,
                 x: x,
